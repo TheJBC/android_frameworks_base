@@ -2735,6 +2735,7 @@ public final class Settings {
          * 2: Display cm circle battery implementation without percentage
          * 3: Display cm circle battery implementation with percentage
          * 4: Hide the battery information
+         * 5: Show MIUI-style battery bar on the status bar
          * default: 0
          * @hide
          */
