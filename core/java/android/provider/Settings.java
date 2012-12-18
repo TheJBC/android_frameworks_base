@@ -3056,7 +3056,7 @@ public final class Settings {
          * Option to display navigation bar
          * @hide
          */
-        public static final String SHOW_NAVBAR = "show_navbar";
+        public static final String KONSTA_NAVBAR = "konsta_navbar";
 
          /**
           * Volume keys control cursor in text fields (default is 0)

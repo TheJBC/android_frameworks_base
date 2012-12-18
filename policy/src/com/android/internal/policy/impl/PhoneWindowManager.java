@@ -1271,8 +1271,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     com.android.internal.R.bool.config_showNavigationBar)) {
                     mHasNavigationBar = true;
             } else {
-                    mHasNavigationBar = (Settings.System.getInt(mContext.getContentResolver(),
-                        Settings.System.SHOW_NAVBAR, 0) == 1);
+            mHasNavigationBar = (Settings.System.getInt(mContext.getContentResolver(),
+                    Settings.System.KONSTA_NAVBAR, 0) == 1);
             }
             // Allow a system property to override this. Used by the emulator.
             // See also hasNavigationBar().
