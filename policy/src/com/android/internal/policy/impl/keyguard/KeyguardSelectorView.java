@@ -31,7 +31,16 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.Resources.NotFoundException;
+import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.PorterDuff.Mode;
+import android.graphics.Rect;
+import android.graphics.RectF;
+import android.graphics.Xfermode;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.InsetDrawable;
@@ -109,11 +118,15 @@ public class KeyguardSelectorView extends LinearLayout implements KeyguardSecuri
                 } else {
                     target -= 1 + mTargetOffset;
                     if (target < mStoredTargets.length && mStoredTargets[target] != null) {
-                        try {
-                            Intent launchIntent = Intent.parseUri(mStoredTargets[target], 0);
-                            mActivityLauncher.launchActivity(launchIntent, false, true, null, null);
-                            return;
-                        } catch (URISyntaxException e) {
+                        if (mStoredTargets[target].equals(GlowPadView.EMPTY_TARGET)) {
+                            mCallback.dismiss(false);
+                        } else {
+                            try {
+                                Intent launchIntent = Intent.parseUri(mStoredTargets[target], 0);
+                                mActivityLauncher.launchActivity(launchIntent, false, true, null, null);
+                                return;
+                            } catch (URISyntaxException e) {
+                            }
                         }
                     }
                 }
@@ -270,8 +283,8 @@ public class KeyguardSelectorView extends LinearLayout implements KeyguardSecuri
     }
 
     public void updateResources() {
-        String storedVal = Settings.System.getString(mContext.getContentResolver(),
-                Settings.System.LOCKSCREEN_TARGETS);
+        String storedVal = Settings.System.getStringForUser(mContext.getContentResolver(),
+                Settings.System.LOCKSCREEN_TARGETS, UserHandle.USER_CURRENT);
         if (storedVal == null) {
             // Update the search icon with drawable from the search .apk
             if (!mSearchDisabled) {
@@ -308,6 +321,9 @@ public class KeyguardSelectorView extends LinearLayout implements KeyguardSecuri
             final boolean isLandscape = mCreationOrientation == Configuration.ORIENTATION_LANDSCAPE;
             final Drawable blankActiveDrawable = res.getDrawable(R.drawable.ic_lockscreen_target_activated);
             final InsetDrawable activeBack = new InsetDrawable(blankActiveDrawable, 0, 0, 0, 0);
+            //Magnetic target replacement
+            final Drawable blankInActiveDrawable = res.getDrawable(com.android.internal.R.drawable.ic_lockscreen_lock_pressed);
+            final Drawable unlockActiveDrawable = res.getDrawable(com.android.internal.R.drawable.ic_lockscreen_unlock_activated);
             // Shift targets for landscape lockscreen on phones
             mTargetOffset = isLandscape && !mIsScreenLarge ? 2 : 0;
             if (mTargetOffset == 2) {
@@ -331,7 +347,8 @@ public class KeyguardSelectorView extends LinearLayout implements KeyguardSecuri
                                 if (fSource != null) {
                                     File fPath = new File(fSource);
                                     if (fPath.exists()) {
-                                        front = new BitmapDrawable(res, BitmapFactory.decodeFile(fSource));
+                                        front = new BitmapDrawable(res, getRoundedCornerBitmap(BitmapFactory.decodeFile(fSource)));
+                                        tmpInset = tmpInset + 5;
                                     }
                                 }
                             } else if (in.hasExtra(GlowPadView.ICON_RESOURCE)) {
@@ -385,7 +402,7 @@ public class KeyguardSelectorView extends LinearLayout implements KeyguardSecuri
                             storedDraw.add(new TargetDrawable(res, 0));
                         }
                     } else {
-                        storedDraw.add(new TargetDrawable(res, 0));
+                        storedDraw.add(new TargetDrawable(res, getLayeredDrawable(unlockActiveDrawable, blankInActiveDrawable, tmpInset, true)));
                     }
                 } else {
                     storedDraw.add(new TargetDrawable(res, 0));
@@ -393,6 +410,25 @@ public class KeyguardSelectorView extends LinearLayout implements KeyguardSecuri
             }
             mGlowPadView.setTargetResources(storedDraw);
         }
+    }
+
+    public static Bitmap getRoundedCornerBitmap(Bitmap bitmap) {
+        Bitmap output = Bitmap.createBitmap(bitmap.getWidth(),
+            bitmap.getHeight(), Config.ARGB_8888);
+        Canvas canvas = new Canvas(output);
+
+        final int color = 0xff424242;
+        final Paint paint = new Paint();
+        final Rect rect = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
+        final RectF rectF = new RectF(rect);
+        final float roundPx = 24;
+        paint.setAntiAlias(true);
+        canvas.drawARGB(0, 0, 0, 0);
+        paint.setColor(color);
+        canvas.drawRoundRect(rectF, roundPx, roundPx, paint);
+        paint.setXfermode(new PorterDuffXfermode(Mode.SRC_IN));
+        canvas.drawBitmap(bitmap, rect, rect, paint);
+        return output;
     }
 
     void doTransition(View view, float to) {

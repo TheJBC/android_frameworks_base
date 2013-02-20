@@ -872,6 +872,9 @@
   <java-symbol type="plurals" name="abbrev_num_hours_ago" />
   <java-symbol type="plurals" name="abbrev_num_minutes_ago" />
   <java-symbol type="plurals" name="abbrev_num_seconds_ago" />
+  <java-symbol type="plurals" name="duration_hours" />
+  <java-symbol type="plurals" name="duration_minutes" />
+  <java-symbol type="plurals" name="duration_seconds" />
   <java-symbol type="plurals" name="in_num_days" />
   <java-symbol type="plurals" name="in_num_hours" />
   <java-symbol type="plurals" name="in_num_minutes" />
@@ -1112,6 +1115,7 @@
   <java-symbol type="layout" name="keyguard_multi_user_selector_widget" />
   <java-symbol type="layout" name="sms_short_code_confirmation_dialog" />
   <java-symbol type="layout" name="keyguard_add_widget" />
+  <java-symbol type="layout" name="action_bar_up_container" />
 
   <java-symbol type="anim" name="slide_in_child_bottom" />
   <java-symbol type="anim" name="slide_in_right" />
@@ -1835,11 +1839,16 @@
   <java-symbol type="bool" name="config_hasRotationLockSwitch" />
   <java-symbol type="integer" name="config_backKillTimeout" />
   <java-symbol type="bool" name="config_show_cmIMESwitcher"/>
-  <java-symbol type="bool" name="config_smsSamsungCdmaAlternateMessageIDEncoding" />
-  <java-symbol type="bool" name="config_samsung_stk" />
   <java-symbol type="integer" name="config_wallpaperMaxWidth" />
   <java-symbol type="string" name="config_legacyUmsLunFile" />
   <java-symbol type="bool" name="config_hasRemovableLid" />
+  <java-symbol type="bool" name="config_hasDockBattery" />
+  <java-symbol type="bool" name="config_noDelayInATwoDP" />
+
+  <!-- Telephony -->
+  <java-symbol type="bool" name="config_smsSamsungCdmaAlternateMessageIDEncoding" />
+  <java-symbol type="bool" name="config_samsung_stk" />
+  <java-symbol type="array" name="config_telephony_set_audioparameters" />
 
   <!-- Hardware Key ReMapping -->
   <java-symbol type="integer" name="config_deviceHardwareKeys" />
@@ -1883,6 +1892,7 @@
 
   <!-- Lockscreen -->
   <java-symbol type="bool" name="config_disableHomeUnlockSetting" />
+  <java-symbol type="id" name="expand_challenge_handle" />
   <!-- Lock screen always show battery -->
   <java-symbol type="string" name="lockscreen_discharging" />
 
@@ -1892,4 +1902,10 @@
 
   <!-- Wifi -->
   <java-symbol type="bool" name="config_wifiApStartInterface" />
+  <java-symbol type="bool" name="config_wifiApFirmwareReload" />
+
+  <!-- Device specific handlers -->
+  <java-symbol type="string" name="config_deviceHandlersLib" />
+  <java-symbol type="string" name="config_deviceKeyHandlerClass" />
+  <java-symbol type="string" name="config_deviceDockBatteryHandlerClass" />
 </resources>
