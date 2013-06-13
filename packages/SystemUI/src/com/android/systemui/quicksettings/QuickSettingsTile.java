@@ -1,11 +1,9 @@
 package com.android.systemui.quicksettings;
 
 import android.app.ActivityManagerNative;
-import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.RemoteException;
 import android.os.UserHandle;
@@ -26,47 +24,52 @@ import com.android.systemui.statusbar.phone.QuickSettingsTileView;
 public class QuickSettingsTile implements OnClickListener {
 
     protected final Context mContext;
-    protected final ViewGroup mContainerView;
-    protected final LayoutInflater mInflater;
     protected QuickSettingsTileView mTile;
     protected OnClickListener mOnClick;
     protected OnLongClickListener mOnLongClick;
-    protected int mTileLayout;
+    protected final int mTileLayout;
     protected int mDrawable;
     protected String mLabel;
     protected PhoneStatusBar mStatusbarService;
     protected QuickSettingsController mQsc;
 
-    public QuickSettingsTile(Context context, LayoutInflater inflater, QuickSettingsContainerView container, QuickSettingsController qsc) {
+
+    public QuickSettingsTile(Context context, QuickSettingsController qsc) {
+        this(context, qsc, R.layout.quick_settings_tile_generic);
+    }
+
+    public QuickSettingsTile(Context context, QuickSettingsController qsc, int layout) {
         mContext = context;
-        mContainerView = container;
-        mInflater = inflater;
         mDrawable = R.drawable.ic_notifications;
         mLabel = mContext.getString(R.string.quick_settings_label_enabled);
         mStatusbarService = qsc.mStatusBarService;
         mQsc = qsc;
-        mTileLayout = R.layout.quick_settings_tile_generic;
+        mTileLayout = layout;
     }
 
-    public void setupQuickSettingsTile(){
-        createQuickSettings();
+    public void setupQuickSettingsTile(LayoutInflater inflater, QuickSettingsContainerView container) {
+        mTile = (QuickSettingsTileView) inflater.inflate(R.layout.quick_settings_tile, container, false);
+        mTile.setContent(mTileLayout, inflater);
+        container.addView(mTile);
         onPostCreate();
         updateQuickSettings();
         mTile.setOnClickListener(this);
         mTile.setOnLongClickListener(mOnLongClick);
     }
 
-    void createQuickSettings(){
-        mTile = (QuickSettingsTileView) mInflater.inflate(R.layout.quick_settings_tile, mContainerView, false);
-        mTile.setContent(mTileLayout, mInflater);
-        mContainerView.addView(mTile);
-    }
-
     void onPostCreate(){}
+
+    public void onDestroy() {}
 
     public void onReceive(Context context, Intent intent) {}
 
     public void onChangeUri(ContentResolver resolver, Uri uri) {}
+
+    public void updateResources() {
+        if(mTile != null) {
+            updateQuickSettings();
+        }
+    }
 
     void updateQuickSettings(){
         TextView tv = (TextView) mTile.findViewById(R.id.tile_textview);

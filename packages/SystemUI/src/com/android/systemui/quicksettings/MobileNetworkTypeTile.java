@@ -38,17 +38,16 @@ public class MobileNetworkTypeTile extends QuickSettingsTile implements NetworkS
     private static final int CM_MODE_3GONLY = 1;
     private static final int CM_MODE_BOTH = 2;
 
+    private NetworkController mController;
     private int mMode = NO_NETWORK_MODE_YET;
     private int mIntendedMode = NO_NETWORK_MODE_YET;
     private int mInternalState = STATE_INTERMEDIATE;
     private int mState;
 
-    public MobileNetworkTypeTile(Context context,
-            LayoutInflater inflater, QuickSettingsContainerView container,
-            QuickSettingsController qsc) {
-        super(context, inflater, container, qsc);
+    public MobileNetworkTypeTile(Context context, QuickSettingsController qsc, NetworkController controller) {
+        super(context, qsc);
 
-        updateState();
+        mController = controller;
 
         mOnClick = new OnClickListener() {
             @Override
@@ -116,15 +115,29 @@ public class MobileNetworkTypeTile extends QuickSettingsTile implements NetworkS
 
         //need to clear intermediate states and update the tile
         mInternalState = networkModeToState();
-        applyNetworkTypeChanges();
+        updateResources();
     }
 
-    private void applyNetworkTypeChanges(){
-        updateState();
-        updateQuickSettings();
+    @Override
+    void onPostCreate() {
+        mController.addNetworkSignalChangedCallback(this);
+        updateTile();
+        super.onPostCreate();
     }
 
-    protected void updateState() {
+    @Override
+    public void onDestroy() {
+        mController.removeNetworkSignalChangedCallback(this);
+        super.onDestroy();
+    }
+
+    @Override
+    public void updateResources() {
+        updateTile();
+        super.updateResources();
+    }
+
+    private synchronized void updateTile() {
         mMode = get2G3G(mContext);
         mState = networkModeToState();
 
@@ -199,16 +212,8 @@ public class MobileNetworkTypeTile extends QuickSettingsTile implements NetworkS
     }
 
     @Override
-    void onPostCreate() {
-        NetworkController controller = new NetworkController(mContext);
-        controller.addNetworkSignalChangedCallback(this);
-        super.onPostCreate();
-    }
-
-    @Override
     public void onWifiSignalChanged(boolean enabled, int wifiSignalIconId,
         String wifitSignalContentDescriptionId, String description) {
-            // TODO Auto-generated method stub
     }
 
     @Override
@@ -216,11 +221,10 @@ public class MobileNetworkTypeTile extends QuickSettingsTile implements NetworkS
         int mobileSignalIconId, String mobileSignalContentDescriptionId,
         int dataTypeIconId, String dataTypeContentDescriptionId,
         String description) {
-            applyNetworkTypeChanges();
+        updateResources();
     }
 
     @Override
     public void onAirplaneModeChanged(boolean enabled) {
-        // TODO Auto-generated method stub
     }
 }

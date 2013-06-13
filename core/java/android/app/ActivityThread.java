@@ -126,6 +126,9 @@ import libcore.io.EventLogger;
 import libcore.io.IoUtils;
 
 import dalvik.system.CloseGuard;
+import dalvik.system.VMRuntime;
+import android.os.SystemProperties;
+import java.lang.*;
 
 final class SuperNotCalledException extends AndroidRuntimeException {
     public SuperNotCalledException(String msg) {
@@ -1793,7 +1796,8 @@ public final class ActivityThread {
         }
         PackageInfo pi = null;
         try {
-            pi = getPackageManager().getPackageInfo(theme.getThemePackageName(), 0, 0);
+            pi = getPackageManager().getPackageInfo(theme.getThemePackageName(),
+                    0, UserHandle.myUserId());
         } catch (RemoteException e) {
         }
         if (pi != null && pi.applicationInfo != null && pi.themeInfos != null) {
@@ -4284,6 +4288,37 @@ public final class ActivityThread {
         }
     }
 
+    /**
+     * hwui.use.blacklist allows to disable the hardware acceleration
+     * to specified applications processes, if files (process names)
+     * are present in /data/local/hwui.deny/
+     */
+    private boolean hwuiForbidden(String processName) {
+
+        boolean useBL = SystemProperties.getBoolean("hwui.use.blacklist", true);
+
+        // Default is allowed
+        boolean blacklisted = false;
+
+        if (!useBL || TextUtils.isEmpty(processName))
+            return blacklisted;
+
+        File hwuiConfig = new File("/data/local/hwui.deny/" + processName);
+        if (hwuiConfig.exists()) {
+            blacklisted = true;
+        }
+
+        hwuiConfig = null;
+
+        // Keep the logs to show process names with "adb logcat | grep listed"
+        if (!blacklisted)
+            Slog.v(TAG, processName + " white listed for hwui");
+        else
+            Slog.d(TAG, processName + " black listed for hwui");
+
+        return blacklisted;
+    }
+
     private void updateDefaultDensity() {
         if (mCurDefaultDisplayDpi != Configuration.DENSITY_DPI_UNDEFINED
                 && mCurDefaultDisplayDpi != DisplayMetrics.DENSITY_DEVICE
@@ -4308,6 +4343,36 @@ public final class ActivityThread {
 
         // send up app name; do this *before* waiting for debugger
         Process.setArgV0(data.processName);
+
+        String str  = SystemProperties.get("dalvik.vm.heaputilization", "" );
+        if( !str.equals("") ){
+            float heapUtil = Float.valueOf(str.trim()).floatValue();
+            VMRuntime.getRuntime().setTargetHeapUtilization(heapUtil);
+            Log.d(TAG, "setTargetHeapUtilization:" + str );
+        }
+        int heapMinFree  = SystemProperties.getInt("dalvik.vm.heapMinFree", 0 );
+        if( heapMinFree > 0 ){
+            VMRuntime.getRuntime().setTargetHeapMinFree(heapMinFree);
+            Log.d(TAG, "setTargetHeapMinFree:" + heapMinFree );
+        }
+        int heapConcurrentStart  = SystemProperties.getInt("dalvik.vm.heapconcurrentstart", 0 );
+        if( heapConcurrentStart > 0 ){
+            VMRuntime.getRuntime().setTargetHeapConcurrentStart(heapConcurrentStart);
+            Log.d(TAG, "setTargetHeapConcurrentStart:" + heapConcurrentStart );
+        }
+
+        ////
+        ////If want to set application specific GC paramters, can use
+        ////the following check
+        ////
+        //if( data.processName.equals("com.android.gallery3d")) {
+        //    VMRuntime.getRuntime().setTargetHeapUtilization(0.25f);
+        //    VMRuntime.getRuntime().setTargetHeapMinFree(12*1024*1024);
+        //    VMRuntime.getRuntime().setTargetHeapConcurrentStart(4*1024*1024);
+        //}
+
+
+
         android.ddm.DdmHandleAppName.setAppName(data.processName,
                                                 UserHandle.myUserId());
 
@@ -4318,6 +4383,8 @@ public final class ActivityThread {
             if (!ActivityManager.isHighEndGfx()) {
                 HardwareRenderer.disable(false);
             }
+        } else if (hwuiForbidden(data.processName)) {
+            HardwareRenderer.disable(false);
         }
         
         if (mProfiler.profileFd != null) {

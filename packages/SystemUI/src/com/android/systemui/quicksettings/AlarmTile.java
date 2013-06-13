@@ -17,12 +17,9 @@ import com.android.systemui.statusbar.phone.QuickSettingsContainerView;
 
 public class AlarmTile extends QuickSettingsTile {
 
-    public AlarmTile(Context context, LayoutInflater inflater,
-            QuickSettingsContainerView container,
+    public AlarmTile(Context context, 
             QuickSettingsController qsc, Handler handler) {
-        super(context, inflater, container, qsc);
-
-        mDrawable = R.drawable.ic_qs_alarm_on;
+        super(context, qsc);
 
         mOnClick = new View.OnClickListener() {
             @Override
@@ -37,27 +34,40 @@ public class AlarmTile extends QuickSettingsTile {
 
         qsc.registerObservedContent(Settings.System.getUriFor(
                 Settings.System.NEXT_ALARM_FORMATTED), this);
-        updateStatus();
+    }
+
+    @Override
+    void onPostCreate() {
+        updateTile();
+        super.onPostCreate();
+    }
+
+    @Override
+    public void updateResources() {
+        updateTile();
+        super.updateResources();
+    }
+
+    private synchronized void updateTile() {
+        mDrawable = R.drawable.ic_qs_alarm_on;
+        mLabel = Settings.System.getString(mContext.getContentResolver(),
+                Settings.System.NEXT_ALARM_FORMATTED);
+    }
+
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        updateResources();
     }
 
     @Override
     public void onChangeUri(ContentResolver resolver, Uri uri) {
-        updateStatus();
-        updateQuickSettings();
+        updateResources();
     }
 
     @Override
     public void updateQuickSettings() {
         mTile.setVisibility(!TextUtils.isEmpty(mLabel) ? View.VISIBLE : View.GONE);
         super.updateQuickSettings();
-    }
-
-    /**
-     * Updates the alarm status shown on the tile.
-     */
-    private void updateStatus() {
-        mLabel = Settings.System.getString(mContext.getContentResolver(),
-            Settings.System.NEXT_ALARM_FORMATTED);
     }
 
 }

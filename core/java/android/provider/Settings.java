@@ -900,6 +900,8 @@ public final class Settings {
             MOVED_TO_SECURE.add(Secure.LOCK_BIOMETRIC_WEAK_FLAGS);
             MOVED_TO_SECURE.add(Secure.LOCK_PATTERN_ENABLED);
             MOVED_TO_SECURE.add(Secure.LOCK_PATTERN_VISIBLE);
+            MOVED_TO_SECURE.add(Secure.LOCK_SHOW_ERROR_PATH);
+            MOVED_TO_SECURE.add(Secure.LOCK_DOTS_VISIBLE);
             MOVED_TO_SECURE.add(Secure.LOCK_PATTERN_TACTILE_FEEDBACK_ENABLED);
             MOVED_TO_SECURE.add(Secure.LOGGING_ID);
             MOVED_TO_SECURE.add(Secure.PARENTAL_CONTROL_ENABLED);
@@ -1738,16 +1740,21 @@ public final class Settings {
         public static final String AUTO_BRIGHTNESS_BACKLIGHT = "auto_brightness_backlight";
 
         /**
-         * Whether to enable the electron beam animation when turning screen on
+         * Correction factor for auto-brightness adjustment light sensor
+         * debounce times.
+         * Smaller factors will make the adjustment more responsive, but might
+         * cause flicker and/or cause higher CPU usage.
+         * Valid range is 0.2 ... 3
          *
-         * @hide */
-        public static final String ELECTRON_BEAM_ANIMATION_ON = "electron_beam_animation_on";
+         * @hide
+         */
+        public static final String AUTO_BRIGHTNESS_RESPONSIVENESS = "auto_brightness_responsiveness";
 
         /**
          * Whether to enable the electron beam animation when turning screen off
          *
          * @hide */
-        public static final String ELECTRON_BEAM_ANIMATION_OFF = "electron_beam_animation_off";
+        public static final String SCREEN_OFF_ANIMATION = "screen_off_animation";
 
         /**
          * Control whether the process CPU usage meter should be shown.
@@ -2511,6 +2518,45 @@ public final class Settings {
         public static final String POINTER_SPEED = "pointer_speed";
 
         /**
+         * Whether to enable pie controls?
+         * The value is integer:
+         * 2 = always on
+         * 1 = expanded desktop
+         * 0 = off
+         * Default: 0
+         * @hide
+         */
+        public static final String PIE_CONTROLS = "pie_controls";
+
+        /**
+         * Locations of the pie in the screen.
+         * (1<<0) = LEFT
+         * (1<<1) = BOTTOM
+         * (1<<2) = RIGHT
+         * (1<<3) = TOP
+         * Default: BOTTOM
+         * @hide
+         */
+        public static final String PIE_POSITIONS = "pie_positions";
+
+        /**
+         * Relative pie size (fraction)
+         * Default: 1.0f
+         * @hide
+         */
+        public static final String PIE_SIZE = "pie_size";
+
+        /**
+         * Sensitivity for triggering the pie controls.
+         *  1 = hard
+         *  ...
+         *  3 = easy
+         *  Default: 3
+         * @hide
+         */
+        public static final String PIE_SENSITIVITY = "pie_sensitivity";
+
+        /**
          * Quick Settings Panel Tiles to Use
          *
          * @hide
@@ -2544,6 +2590,13 @@ public final class Settings {
          * @hide
          */
         public static final String QS_DYNAMIC_USBTETHER = "qs_dyanmic_usbtether";
+
+        /**
+         * Quick Settings Panel Dynamic Tiles
+         *
+         * @hide
+         */
+        public static final String QS_DYNAMIC_DOCK_BATTERY = "qs_dyanmic_dock_battery";
 
         /**
          * Quick Settings Panel Dynamic Tiles
@@ -2760,6 +2813,12 @@ public final class Settings {
         public static final String MENU_UNLOCK_SCREEN = "menu_unlock_screen";
 
         /**
+         * Whether to wake the screen with the home key, the value is boolean.
+         * @hide
+         */
+        public static final String HOME_WAKE_SCREEN = "home_wake_screen";
+
+        /**
          * Whether to wake the screen with the volume keys, the value is boolean.
          * @hide
          */
@@ -2892,6 +2951,55 @@ public final class Settings {
         public static final String POWER_MENU_PROFILES_ENABLED = "power_menu_profiles_enabled";
 
         /**
+         * Enable Stylus Gestures
+         *
+         * @hide
+         */
+        public static final String ENABLE_STYLUS_GESTURES = "enable_stylus_gestures";
+
+        /**
+         * Left Swipe Action
+         *
+         * @hide
+         */
+        public static final String GESTURES_LEFT_SWIPE = "gestures_left_swipe";
+
+        /**
+         * Right Swipe Action
+         *
+         * @hide
+         */
+        public static final String GESTURES_RIGHT_SWIPE = "gestures_right_swipe";
+
+        /**
+         * Up Swipe Action
+         *
+         * @hide
+         */
+        public static final String GESTURES_UP_SWIPE = "gestures_up_swipe";
+
+        /**
+         * down Swipe Action
+         *
+         * @hide
+         */
+        public static final String GESTURES_DOWN_SWIPE = "gestures_down_swipe";
+
+        /**
+         * Long press Action
+         *
+         * @hide
+         */
+        public static final String GESTURES_LONG_PRESS = "gestures_long_press";
+
+        /**
+         * double tap Action
+         *
+         * @hide
+         */
+        public static final String GESTURES_DOUBLE_TAP = "gestures_double_tap";
+
+        /**
          * Whether power menu airplane toggle is enabled
          * @hide
          */
@@ -2963,6 +3071,15 @@ public final class Settings {
           */
          public static final String KEY_ASSIST_ACTION = "key_assist_action";
 
+         /**
+          * Swap volume buttons when the screen is rotated
+          * 0 - Disabled
+          * 1 - Enabled (screen is rotated by 90 or 180 degrees: phone, hybrid)
+          * 2 - Enabled (screen is rotated by 180 or 270 degrees: tablet)
+          * @hide
+          */
+         public static final String SWAP_VOLUME_KEYS_ON_ROTATION = "swap_volume_keys_on_rotation";
+
         /**
          * Weather to minimize lockscreen challenge on screen turned on
          * @hide
@@ -3020,6 +3137,24 @@ public final class Settings {
          * @hide
          */
         public static final String NOTIFICATION_CONVERT_SOUND_TO_VIBRATION = "convert_sound_to_vibration";
+
+        /**
+         * Custom navring actions
+         *
+         * @hide
+         */
+        public static final String[] NAVIGATION_RING_TARGETS = new String[] {
+            "navigation_ring_targets_0",
+            "navigation_ring_targets_1",
+            "navigation_ring_targets_2",
+        };
+
+        /**
+         * Volume key controls ringtone or media sound stream
+         *
+         * @hide
+         */
+        public static final String VOLUME_KEYS_CONTROL_RING_STREAM = "volume_keys_control_ring_stream";
 
         /**
          * Settings to backup. This is here so that it's in the same place as the settings
@@ -3373,6 +3508,8 @@ public final class Settings {
             MOVED_TO_LOCK_SETTINGS = new HashSet<String>(3);
             MOVED_TO_LOCK_SETTINGS.add(Secure.LOCK_PATTERN_ENABLED);
             MOVED_TO_LOCK_SETTINGS.add(Secure.LOCK_PATTERN_VISIBLE);
+            MOVED_TO_LOCK_SETTINGS.add(Secure.LOCK_SHOW_ERROR_PATH);
+            MOVED_TO_LOCK_SETTINGS.add(Secure.LOCK_DOTS_VISIBLE);
             MOVED_TO_LOCK_SETTINGS.add(Secure.LOCK_PATTERN_TACTILE_FEEDBACK_ENABLED);
 
             MOVED_TO_GLOBAL = new HashSet<String>();
@@ -4008,6 +4145,18 @@ public final class Settings {
         @Deprecated
         public static final String
                 LOCK_PATTERN_TACTILE_FEEDBACK_ENABLED = "lock_pattern_tactile_feedback_enabled";
+
+        /**
+         * Whether lock pattern will show dots (0 = false, 1 = true)
+         * @hide
+         */
+        public static final String LOCK_DOTS_VISIBLE = "lock_pattern_dotsvisible";
+
+        /**
+         * Whether lockscreen error pattern is visible (0 = false, 1 = true)
+         * @hide
+         */
+        public static final String LOCK_SHOW_ERROR_PATH = "lock_pattern_show_error_path";
 
         /**
          * This preference allows the device to be locked given time after screen goes off,
@@ -4877,6 +5026,9 @@ public final class Settings {
          */
         public static final String ADVANCED_REBOOT = "advanced_reboot";
 
+
+        public static final String ENABLE_PERMISSIONS_MANAGEMENT = "enable_permissions_management";
+
         /**
          * This are the settings to be backed up.
          *
@@ -5145,6 +5297,24 @@ public final class Settings {
          * @hide
          */
         public static final String POWER_SOUNDS_ENABLED = "power_sounds_enabled";
+
+        /**
+         * Whether to sound when charger power is connected/disconnected
+         * @hide
+         */
+        public static final String POWER_NOTIFICATIONS_ENABLED = "power_notifications_enabled";
+
+        /**
+         * Whether to vibrate when charger power is connected/disconnected
+         * @hide
+         */
+        public static final String POWER_NOTIFICATIONS_VIBRATE = "power_notifications_vibrate";
+
+        /**
+         * URI for power notification sounds
+         * @hide
+         */
+        public static final String POWER_NOTIFICATIONS_RINGTONE = "power_notifications_ringtone";
 
         /**
          * URI for the "wireless charging started" sound.
@@ -6215,6 +6385,9 @@ public final class Settings {
             AUTO_TIME,
             AUTO_TIME_ZONE,
             POWER_SOUNDS_ENABLED,
+            POWER_NOTIFICATIONS_ENABLED,
+            POWER_NOTIFICATIONS_VIBRATE,
+            POWER_NOTIFICATIONS_RINGTONE,
             DOCK_SOUNDS_ENABLED,
             USB_MASS_STORAGE_ENABLED,
             ENABLE_ACCESSIBILITY_GLOBAL_GESTURE_ENABLED,

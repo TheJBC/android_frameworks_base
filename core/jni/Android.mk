@@ -88,7 +88,6 @@ LOCAL_SRC_FILES:= \
 	android_util_XmlBlock.cpp \
 	android_util_PackageRedirectionMap.cpp \
 	android/graphics/AutoDecodeCancel.cpp \
-	android/graphics/Bitmap.cpp \
 	android/graphics/BitmapFactory.cpp \
 	android/graphics/Camera.cpp \
 	android/graphics/Canvas.cpp \
@@ -158,6 +157,18 @@ ifeq ($(BOARD_USES_QCOM_HARDWARE),true)
 	    com_android_internal_app_ActivityTrigger.cpp
 endif
 
+ifeq ($(BOARD_HAVE_BLUETOOTH_BLUEZ), true)
+LOCAL_SRC_FILES += \
+	bluetoothmsm/android_bluetooth_HeadsetBase.cpp \
+	bluetoothmsm/android_bluetooth_common.cpp \
+	bluetoothmsm/android_bluetooth_BluetoothAudioGateway.cpp \
+	bluetoothmsm/android_bluetooth_BluetoothSocket.cpp \
+	bluetoothmsm/android_bluetooth_c.c \
+	bluetoothmsm/android_server_BluetoothService.cpp \
+	bluetoothmsm/android_server_BluetoothEventLoop.cpp \
+	bluetoothmsm/android_server_BluetoothA2dpService.cpp
+endif #BOARD_HAVE_BLUETOOTH_BLUEZ
+
 LOCAL_C_INCLUDES += \
 	$(JNI_H_INCLUDE) \
 	$(LOCAL_PATH)/android/graphics \
@@ -220,11 +231,39 @@ LOCAL_SHARED_LIBRARIES := \
 	libharfbuzz \
 	libz
 
+ifeq ($(BOARD_HAVE_BLUETOOTH_BLUEZ),true)
+    LOCAL_C_INCLUDES += \
+          external/dbus \
+          system/bluetooth/bluez-clean-headers
+    LOCAL_CFLAGS += -DHAVE_BLUETOOTH -DHAVE_BLUEZ_JNI
+    LOCAL_SHARED_LIBRARIES += libbluedroid libdbus
+endif #BOARD_HAVE_BLUETOOTH_BLUEZ
+
 ifeq ($(HAVE_SELINUX),true)
 LOCAL_C_INCLUDES += external/libselinux/include
 LOCAL_SHARED_LIBRARIES += libselinux
 LOCAL_CFLAGS += -DHAVE_SELINUX
 endif # HAVE_SELINUX
+
+ifeq ($(TARGET_ARCH), arm)
+  ifeq ($(TARGET_USE_KRAIT_BIONIC_OPTIMIZATION), true)
+    TARGET_arm_CFLAGS += -DUSE_NEON_BITMAP_OPTS -mvectorize-with-neon-quad
+    LOCAL_SRC_FILES+= \
+		android/graphics/Bitmap.cpp.arm
+  else
+    ifeq ($(TARGET_ARCH_VARIANT_CPU), cortex-a15)
+      TARGET_arm_CFLAGS += -DUSE_NEON_BITMAP_OPTS -mvectorize-with-neon-quad
+      LOCAL_SRC_FILES+= \
+		android/graphics/Bitmap.cpp.arm
+    else
+      LOCAL_SRC_FILES+= \
+		android/graphics/Bitmap.cpp
+    endif
+  endif
+else
+    LOCAL_SRC_FILES+= \
+		android/graphics/Bitmap.cpp
+endif
 
 ifeq ($(USE_OPENGL_RENDERER),true)
 	LOCAL_SHARED_LIBRARIES += libhwui

@@ -16,6 +16,7 @@ import com.android.systemui.statusbar.policy.BatteryController;
 import com.android.systemui.statusbar.policy.BatteryController.BatteryStateChangeCallback;
 
 public class BatteryTile extends QuickSettingsTile implements BatteryStateChangeCallback{
+    private BatteryController mController;
 
     private boolean charging = false;
     private int batteryLevel = 0;
@@ -24,16 +25,10 @@ public class BatteryTile extends QuickSettingsTile implements BatteryStateChange
     private LevelListDrawable batteryLevels;
     private LevelListDrawable chargingBatteryLevels;
 
-    public BatteryTile(Context context, LayoutInflater inflater,
-            QuickSettingsContainerView container, QuickSettingsController qsc) {
-        super(context, inflater, container, qsc);
+    public BatteryTile(Context context, QuickSettingsController qsc, BatteryController controller) {
+        super(context, qsc, R.layout.quick_settings_tile_battery);
 
-        mTileLayout = R.layout.quick_settings_tile_battery;
-        batteryLevels = (LevelListDrawable) mContext.getResources().getDrawable(R.drawable.qs_sys_battery);
-        chargingBatteryLevels = (LevelListDrawable) mContext.getResources().getDrawable(R.drawable.qs_sys_battery_charging);
-
-        BatteryController controller = new BatteryController(mContext);
-        controller.addStateChangedCallback(this);
+        mController = controller;
 
         mOnClick = new View.OnClickListener() {
             @Override
@@ -45,18 +40,33 @@ public class BatteryTile extends QuickSettingsTile implements BatteryStateChange
 
     @Override
     void onPostCreate() {
-        applyBatteryChanges();
+        updateTile();
+        mController.addStateChangedCallback(this);
         super.onPostCreate();
+    }
+
+    @Override
+    public void onDestroy() {
+        mController.removeStateChangedCallback(this);
+        super.onDestroy();
     }
 
     @Override
     public void onBatteryLevelChanged(int level, boolean pluggedIn) {
         batteryLevel = level;
         charging = pluggedIn;
-        applyBatteryChanges();
+        updateResources();
     }
 
-    void applyBatteryChanges() {
+    @Override
+    public void updateResources() {
+        updateTile();
+        super.updateResources();
+    }
+
+    private synchronized void updateTile() {
+        batteryLevels = (LevelListDrawable) mContext.getResources().getDrawable(R.drawable.qs_sys_battery);
+        chargingBatteryLevels = (LevelListDrawable) mContext.getResources().getDrawable(R.drawable.qs_sys_battery_charging);
         batteryIcon = charging
                 ? chargingBatteryLevels :
                     batteryLevels;
@@ -68,9 +78,7 @@ public class BatteryTile extends QuickSettingsTile implements BatteryStateChange
                             batteryLevel)
                     : mContext.getString(R.string.status_bar_settings_battery_meter_format,
                             batteryLevel);
-
         }
-        updateQuickSettings();
     }
 
     @Override
