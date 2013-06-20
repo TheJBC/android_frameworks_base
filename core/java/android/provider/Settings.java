@@ -2723,6 +2723,13 @@ public final class Settings {
          * @hide
          */
         public static final String HALO_HIDE = "halo_hide";
+		
+       /** 
+         * HALO pause activities?, defaults to 0 (no, do not pause) on devices which isLargeRAM() == true 
+         * otherwise it defaults to 1 (yes, do pause) 
+         * @hide 
+         */ 
+        public static final String HALO_PAUSE = "halo_pause"; 
 
         /**
          * Display style of AM/PM next to clock in status bar
