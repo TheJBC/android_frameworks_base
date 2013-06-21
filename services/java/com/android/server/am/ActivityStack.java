@@ -4761,6 +4761,7 @@ final class ActivityStack {
         int isLowRAM = (ActivityManager.isLargeRAM()) ? 0 : 1; 
         return Settings.System.getInt(mContext.getContentResolver(), 
                 Settings.System.HALO_PAUSE, isLowRAM) == 1; 
+	}			
 	
     public void dismissKeyguardOnNextActivityLocked() {
         mDismissKeyguardOnNextActivity = true;
