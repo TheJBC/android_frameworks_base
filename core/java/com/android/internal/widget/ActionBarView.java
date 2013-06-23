@@ -903,7 +903,11 @@ public class ActionBarView extends AbsActionBarView {
         mIsCollapsed = false;
 
         int widthMode = MeasureSpec.getMode(widthMeasureSpec);
+		if (widthMode != MeasureSpec.EXACTLY) { 
+         }		
         int heightMode = MeasureSpec.getMode(heightMeasureSpec);
+		if (heightMode != MeasureSpec.AT_MOST) {
+         }		
         int contentWidth = MeasureSpec.getSize(widthMeasureSpec);
         int maxHeight = mContentHeight >= 0 ?
                 mContentHeight : MeasureSpec.getSize(heightMeasureSpec);
