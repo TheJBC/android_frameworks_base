@@ -66,6 +66,7 @@ import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.UserHandle;
 import android.provider.Settings;
+import android.service.pie.PieManager;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -299,9 +300,6 @@ public abstract class BaseStatusBar extends SystemUI implements
         mBarService = IStatusBarService.Stub.asInterface(
                 ServiceManager.getService(Context.STATUS_BAR_SERVICE));
 
-        mShowNotificationCounts = Settings.System.getInt(mContext.getContentResolver(),
-                Settings.System.STATUS_BAR_NOTIF_COUNT, 0) == 1;
-
         mStatusBarContainer = new FrameLayout(mContext);
 
         // Connect in to the status bar manager service
@@ -364,6 +362,12 @@ public abstract class BaseStatusBar extends SystemUI implements
                    ));
         }
 
+        if (PieManager.getInstance().isPresent()) {
+            mPieController = new PieController(mContext);
+            mPieController.attachStatusBar(this);
+            addNavigationBarCallback(mPieController);
+        }
+
         mCurrentUserId = ActivityManager.getCurrentUser();
 
         IntentFilter filter = new IntentFilter();
@@ -376,7 +380,11 @@ public abstract class BaseStatusBar extends SystemUI implements
                     mCurrentUserId = intent.getIntExtra(Intent.EXTRA_USER_HANDLE, -1);
                     if (true) Slog.v(TAG, "userId " + mCurrentUserId + " is in the house");
                     userSwitched(mCurrentUserId);
+                    if (mPieController != null) {
+                        mPieController.userSwitched(mCurrentUserId);
+                    }
                 }
+
             }}, filter);
 
         // Listen for HALO state
@@ -426,10 +434,11 @@ public abstract class BaseStatusBar extends SystemUI implements
                 mHalo = null;
             }
         }
+
     }
 
     public void userSwitched(int newUserId) {
-        // should be overridden
+        StatusBarIconView.GlobalSettingsObserver.getInstance(mContext).onChange(true);
     }
 
     public boolean notificationIsForCurrentUser(StatusBarNotification n) {
@@ -1058,6 +1067,16 @@ public abstract class BaseStatusBar extends SystemUI implements
         updateExpansionStates();
         updateNotificationIcons();
 
+        if (entry.userCleared() && !mNotificationData.hasClearableItems()) {
+            // wait a bit to make the user aware of what's happening
+            mHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    animateCollapsePanels(CommandQueue.FLAG_EXCLUDE_NONE);
+                }
+            }, 225);
+        }
+
         return entry.notification;
     }
 
@@ -1365,10 +1384,11 @@ public abstract class BaseStatusBar extends SystemUI implements
 
     public int getExpandedDesktopMode() {
         ContentResolver resolver = mContext.getContentResolver();
-        boolean expanded = Settings.System.getInt(resolver,
-                Settings.System.EXPANDED_DESKTOP_STATE, 0) == 1;
+        boolean expanded = Settings.System.getIntForUser(resolver,
+                Settings.System.EXPANDED_DESKTOP_STATE, 0, UserHandle.USER_CURRENT) == 1;
         if (expanded) {
-            return Settings.System.getInt(resolver, Settings.System.EXPANDED_DESKTOP_STYLE, 0);
+            return Settings.System.getIntForUser(resolver,
+                    Settings.System.EXPANDED_DESKTOP_STYLE, 0, UserHandle.USER_CURRENT);
         }
         return 0;
     }
